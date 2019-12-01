@@ -34,11 +34,11 @@ constant OUR_ADDRESS     : std_logic_vector(SRC_ADDR_START TO SRC_ADDR_END) := x
 --8-bit destination address
 constant DST_ADDR_START  : integer := 8;
 constant DST_ADDR_END    : integer := 15;
-constant DEST_ADRESS     : std_logic_vector(DST_ADDR_START TO DST_ADDR_END) :=  x"00";
+constant DST_ADRESS     : std_logic_vector(DST_ADDR_START TO DST_ADDR_END) :=  x"00";
 --8-bit identifier
 constant IDENTIFIER_START: integer :=16;
 constant IDENTIFIER_END  : integer :=23;
-constant IDENTFIER       : std_logic_vector(IDENTIFIER_START TO IDENTIFIER_END) :=  x"00";
+constant IDENTIFIER       : std_logic_vector(IDENTIFIER_START TO IDENTIFIER_END) :=  x"00";
 --128-bit payload
 constant PAYLOAD_START   : integer :=24;
 constant PAYLOAD_END     : integer :=151;
