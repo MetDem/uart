@@ -179,7 +179,8 @@ begin
                         state <= send_data;
                     end if;
                 end if;
-            
+            end case;
+    end if;
 
     end process;
 
