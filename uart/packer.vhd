@@ -19,8 +19,8 @@ entity packer is
 end entity packer;
 
 architecture rtl of packer is
-    type state_type is (rst, src, dst, ident, payload, check);
-    signal state : state_type := s0;
+    type state_type is (rst, src, dst, ident, payload, check,encryp, send_data);
+    signal state : state_type := rst;
     signal s_buffer: std_logic_vector(ULEN_1 downto 0) := (others=>'0'); 
     signal s_buff_src_addr: std_logic_vector(D downto 0) := (others=>'0');
     signal s_buff_dst_addr: std_logic_vector(D downto 0) := (others=>'0');
@@ -28,6 +28,7 @@ architecture rtl of packer is
     signal s_buff_payload:  std_logic_vector(127 downto 0) := (others=>'0');
     signal s_buff_checksum: std_logic_vector(D downto 0) := (others => '0');
     signal s_encryp_data : std_logic_vector(127 downto 0) := (others=> '0');
+    signal s_key : std_logic_vector(7 downto 0) := (others=> '1');
 
 
 
@@ -48,15 +49,15 @@ architecture rtl of packer is
 
     signal cntrst : std_logic := '0';
     signal cntdone : std_logic := '0';
-    signal cnt     : std_logic := '0';
+    signal cnt     : unsigned(31 downto 0) := (others=>'0');
 
 begin
 
-    process(clk) is
+    process(i_clk) is
     begin 
-    if rising_edge(clk) then
+    if rising_edge(i_clk) then
         if cntrst ='1' then
-            cnt<=to_unsigned(M/2-1,32);
+            cnt<= to_unsigned(((TIMER/2)-1),32);
             cntdone<='0';
         else 
             if cnt=0 then
@@ -71,11 +72,11 @@ begin
     end process;
 
 
-process(clk) is
+process(i_clk) is
 
 begin
 
-    if rising_edge(clk) then
+    if rising_edge(i_clk) then
         cntrst <= '0';
         o_ready <= '0';
         o_packer <= x"00";
@@ -120,12 +121,12 @@ begin
             when payload => 
                 if(cntdone = '1' and s_payload_ready = '1') then 
                     if(i_rx /= x"10") then
-                        s_buff_payload <= i_rx & s_buff_payload(127 downto 120);
+                        s_buff_payload <= i_rx & s_buff_payload(127 downto 8);
                         if(s_cnt = s_cntdone) then
                             s_checksum_ready <= '1';
                             state <= check;
-                            s_cnt = "0000";
-                            s_payload_ready = '0';
+                            s_cnt <= "0000";
+                            s_payload_ready <= '0';
                         else
                             s_cnt <= s_cnt + 1;
                             state <= payload;
@@ -148,32 +149,32 @@ begin
 
             when encryp => 
                 if(s_encryp_ready = '1') then 
-                    s_encryped_data(127 downto 120) <= s_key xor s_buffer(151 downto 144);
-                    s_buffer <= s_buffer(143 downto 24) & s_buffer(151 downto 144);
+                    s_encryp_data(127 downto 120) <= s_key xor s_buffer(151 downto 144);
+                    s_buffer(151 downto 24) <= s_buffer(143 downto 24) & s_buffer(151 downto 144);
                     
                     if(s_cnt = s_cntdone) then
-                        s_send_data = '1';
-                        s_encryped_data = '0';
+                        s_send_data_ready <= '1';
+                        s_encryp_ready <= '0';
                         state <= send_data; 
                         s_cnt <= "0000";
                     else
-                        s_encryped_data <= s_encryped_data(119 downto 0) & s_encryped_data(127 downto 0);
+                        s_encryp_data <= s_encryp_data(119 downto 0) & s_encryp_data(127 downto 120);
                         s_cnt <= s_cnt +1;
-                        s_encryped_data <= '1';
+                        s_encryp_ready <= '1';
                         state <= encryp;
                     end if;
                 end if;
 
             when send_data => 
-                if(s_send_data_ready = '1' and cntdone = '1') then;
-                    o_packer <= s_encryped_data(7 downto 0);
-                    if(s_cnt = s_cntdone)
+                if(s_send_data_ready = '1' and cntdone = '1') then
+                    o_packer <= s_encryp_data(7 downto 0);
+                    if(s_cnt = s_cntdone) then
                         s_send_data_ready <= '0';
                         s_cnt <= "0000";
                         state <= rst;
                         o_ready <= '1';
                     else
-                        s_encryp_data <= encryped_data(7 downto 0) & s_encryp_data(127 downto 8);
+                        s_encryp_data <= s_encryp_data(7 downto 0) & s_encryp_data(127 downto 8);
                         s_cnt <= s_cnt + 1;
                         s_send_data_ready <= '1';
                         state <= send_data;
