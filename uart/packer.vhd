@@ -87,6 +87,8 @@ begin
                 cntrst <= '1';
                 s_buff_payload <= (others=>'0');
                 s_buffer <= (others=>'0');
+                s_encryp_data <= (others=>'0');
+
 
                 if (i_rx_ready = '1') then 
                     cntrst <= '0';
@@ -155,6 +157,7 @@ begin
                     if(s_cnt = s_cntdone) then
                         s_send_data_ready <= '1';
                         s_encryp_ready <= '0';
+                        s_buffer <= s_buff_checksum & s_encryp_data & s_buff_ident & s_buff_dst_addr & s_buff_src_addr;
                         state <= send_data; 
                         s_cnt <= "0000";
                     else
@@ -167,14 +170,14 @@ begin
 
             when send_data => 
                 if(s_send_data_ready = '1' and cntdone = '1') then
-                    o_packer <= s_encryp_data(7 downto 0);
+                    o_packer <= s_buffer(7 downto 0);
                     if(s_cnt = s_cntdone) then
                         s_send_data_ready <= '0';
                         s_cnt <= "0000";
                         state <= rst;
                         o_ready <= '1';
                     else
-                        s_encryp_data <= s_encryp_data(7 downto 0) & s_encryp_data(127 downto 8);
+                        s_buffer <= s_buffer(7 downto 0) & s_buffer(159 downto 8);
                         s_cnt <= s_cnt + 1;
                         s_send_data_ready <= '1';
                         state <= send_data;
