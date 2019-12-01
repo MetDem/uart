@@ -12,7 +12,7 @@ entity packer is
         i_rx       : in std_logic_vector(D downto 0);
         
         o_packer   : out std_logic_vector(D downto 0); 
-        o_ready    : out std_logic;
+        o_ready    : out std_logic
         
         
     );
