@@ -6,7 +6,7 @@ library work;
 use work.constants.all;
 
 entity tb_uart_top is
-  port ();
+  --port ();
 end tb_uart_top;
 
 
