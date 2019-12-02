@@ -11,7 +11,7 @@ end tb_uart_top;
 
 
 architecture Behavioral of tb_uart_top is
-
+    constant CLKA_PERIOD : time := 10 ns;
     signal clk: std_logic := '0';
     signal uart_rx_i: std_logic := '0';
     signal uart_tx_o: std_logic := '0'; 
