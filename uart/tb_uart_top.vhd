@@ -6,8 +6,7 @@ library work;
 use work.constants.all;
 
 entity tb_uart_top is
-  port (
-  ) ;
+  port ();
 end tb_uart_top;
 
 
@@ -38,4 +37,4 @@ begin
     wait;
     end process;
 
-end Behavioral ; -tb_uart_topehaviotb_uart_top
+end Behavioral ; --tb_uart_top
